@@ -57,7 +57,7 @@ system = FuzzySystem {
            ],
   tnorma = tnormProd,
   snorma = snormSum,
-  defuzmethod = weightedFuzzyMean 
+  defuzmethod = fuzzyMean 
 }
 
 le = (-40, -15)
@@ -96,7 +96,7 @@ ze = (-6, 0, 6)
 zE = triangle ze
 ps = (0, 6, 12)
 pS = triangle ps
-pm = (6, 16, 26)
+pm = (6, 15, 24)
 pM = triangle pm
 pb = (16, 30)
 pB = sramp pb

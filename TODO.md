@@ -2,5 +2,5 @@
 - [x] Escoger framework para los tests
 - [ ] [40%] Escribir tests
 - [x] Hacer la función main.
-- [ ] Generar gráficas.
+- [x] Generar gráficas.
 - [ ] Escribir la memoria.

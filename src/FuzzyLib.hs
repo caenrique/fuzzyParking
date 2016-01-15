@@ -54,7 +54,7 @@ sera3 :: (Float, Float, Float) -> (Float, Float)
 sera3 (a, b, c) = (b, c-a)
 
 sera2 :: (Float, Float) -> (Float, Float)
-sera2 (a, b) = (b, b-a)
+sera2 (a, b) = (a + (b-a)/2, b-a)
 
 evalTerm :: Tnorm -> Snorm -> Term -> Fuzzy
 evalTerm and or (t1 :&& t2)          = (evalTerm and or t1) `and` (evalTerm and or t2)
