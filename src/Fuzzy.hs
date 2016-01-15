@@ -1,3 +1,4 @@
+-- | El módulo 'Fuzzy' contiene las definiciones necesarias para describir sistemas difusos.
 module Fuzzy where
 
 -- | Tipo de dato que representa un grado de verdad, es decir, un valor real entre 0 y 1.
@@ -39,4 +40,6 @@ data FuzzySystem = FuzzySystem {
   defuzmethod :: Defuzmethod
 }
 
+-- | Tipo de dato que representa una fución que toma un sistema difuso y una lista de valores
+-- de entrada, y calcula el valor de salida del sistema por medio de un método de inferencia.
 type Inference = (FuzzySystem -> [Float] -> Float)

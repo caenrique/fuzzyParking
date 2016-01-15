@@ -1,3 +1,5 @@
+-- | El módulo 'FuzzyParking' define una función de inferencia concreta para el problema del
+-- controlador de aparcamiento.
 module FuzzyParking (fuzzyParking) where
 import FuzzyLib
 import Fuzzy
