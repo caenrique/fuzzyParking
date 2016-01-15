@@ -1,0 +1,6 @@
+- [ ] Documentar el código usando Haddock
+- [ ] Escoger framework para los tests
+- [ ] Escribir tests
+- [ ] Hacer la función main.
+- [ ] Generar gráficas.
+- [ ] Escribir la memoria.
