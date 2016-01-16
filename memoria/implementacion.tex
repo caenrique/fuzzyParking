@@ -1,0 +1,258 @@
+\section{Implementación}
+Para la implementación de este sistema difuso se ha dividido la
+funcionalidad en tres módulos:
+
+\begin{itemize}
+\item El módulo \emph{Fuzzy.hs} contiene la definición de los tipos de
+  datos necesarios para la implementación del resto de módulos.
+\item El módulo \emph{FuzzyLib.hs} contiene la definición de
+  funciones de pertenencia, así como de T-normas, S-normas y funciones
+  de defuzzificacion.
+\item El módulo \emph{FuzzyParking.hs} contiene la definición concreta
+  del sistema difuso para el problema del aparcamiento en batería.
+\end{itemize}
+
+En esta memoria no entraremos en detalle con cada uno de ellos por ser
+relativamente sencillos además de estar debidamente documentados, por
+lo que en vez de eso, nos detendremos a analizar detalladamente
+algunas partes clave del funcionamiento del sistema.
+
+El primer trozo de código que analizaremos corresponde a la definición
+de una fución de pertenencia. Para ilustrar la técnica que hemos usado
+vamos a emplear la fución de pertenencia con forma de triángulo, pero
+el concepto se aplica igual con el resto.
+
+\begin{figure}
+\begin{lstlisting}
+triangle :: (Float, Float, Float) -> MemFunc
+triangle (a,b,c) f
+  | f > a && f <= b = (f-a) / (b-a)
+  | f > b && f < c  = 1 - (f-b) / (c-b)
+  | otherwise       = 0
+\end{lstlisting}
+\caption{Función de pertenencia en forma de triángulo}
+\label{code:codigo1}
+\end{figure}
+
+Como podemos ver en la figura \ref{code:codigo1}, la función
+\emph{triangle} es de tipo \emph{(Float, Float, Float) -> MemFunc}, lo
+que quiere decir que toma como parámetro una tupla con tres valores
+reales y devuelve un valor de tipo \emph{MemFunc}, que está definido
+en el módulo \emph{Fuzzy.hs}.
+
+\begin{figure}
+\begin{lstlisting}
+type memFunc = (Float -> Fuzzy)
+\end{lstlisting}
+\label{code:codigo2}
+\end{figure}
+
+Por lo tanto, la función \emph{triangle} recibe como parámetro una
+tupla y devuelve una fución, la cual toma como parámetro un valor real
+y de vuelve un \emph{Fuzzy} (que no es más que un valor real entre 0 y
+1).
+
+El tipo de la función \emph{triangle} se podría reescribir como
+\begin{figure}
+\begin{lstlisting}
+triangle :: (Float, Float, Float) -> Float -> Fuzzy
+\end{lstlisting}
+\label{code:codigo3}
+\end{figure}
+y sería totalmente válido, sin embargo utilizamos el tipo
+\emph{MemFunc} para hacer énfasis en que lo que devuelve no es sólo el
+\emph{Fuzzy} que aparece al final de la definición del tipo, sino una
+función de tipo \emph{Float -\textgreater Fuzzy}. Esto es así gracias a la
+aplicación parcial de funciones. De hecho, la definición de la función
+tiene cuatro parámetros de entrada, pero cuando la llamamos en el
+resto del código sólo le pasamos tres. De esta forma, podemos definir
+funciones de pertenencia parametrizadas sin necesidad de progrmarlas a
+mano todas.
+
+Los tres parámetros en la tupla que recibe la fución \emph{triangle}
+corresponden a los tres vértices del triángulo descritos en una
+dimensión, teniendo en cuenta que la altura del triángulo es siempre 1.
+
+El siguiente trozo de código corresponde a una función de
+defuzzificaicón. En concreto a la función \emph{wightedFuzzyMean}.
+
+\begin{figure}
+\begin{lstlisting}
+weightedFuzzyMean :: Defuzmethod
+weightedFuzzy x = foldr (\(c,d,a) acc -> acc + (a*d*c)) 0 x /
+  (foldr (\(_,d,a) acc -> acc + (a*d)) 0 x)
+\end{lstlisting}
+\caption{Función de defuzzificación usando la media difusa ponderada
+  por la base}
+\label{code:codigo4}
+\end{figure}
+
+En este caso, vemos una declaración de tipo \emph{Defuzmethod}, que no
+es más que \emph{[(Float, Float, Float)] -\textgreater Float}. Esta
+función calcula la media de los centros de los consecuentes de cada
+regla, ponderados por el producto entre el grado de activación de la
+regla y la base o el área del consecuente. La expresión \ref{exp:expresion1}
+corresponde a su funcionamiento.
+
+\begin{equation}
+y = \frac{\sum_{r} \alpha_{r} \cdot d_{r} \cdot c_{r}}{\sum_{r}
+  \alpha_{r} \cdot d_{r}}
+\label{exp:expresion1}
+\end{equation}
+
+Los tres parámetros que recibe la función \emph{weightedFuzzyMean} en
+cada tupla de la lista corresponden a el centro de la función de
+pertenencia del consecuente, la base de la misma, y el grado de
+activación de la regla en la que aparece dicho conseguente.
+
+La siguiente función que vamos a analizar es la función que realiza la
+inferencia, \emph{fuzzyParking}.
+
+\begin{figure}
+\begin{lstlisting}
+fuzzyParking :: Inference -- [Float] -> Float
+fuzzyParking sys (x:a:_) = (defuzmethod sys) $ zip3 centros base alphaList
+  where alphaList = map (evalTerm (tnorma sys) (snorma sys) . tmap f . getTerm) $ reglas sys
+        params = unzip . map (getParams . getConseq) $ (reglas sys)
+        centros = fst params
+        base = snd params
+        f var = case var of
+          "X"      -> x
+          "Angulo" -> a
+\end{lstlisting}
+\caption{Función que realiza la inferencia del sistema de aparcamiento
+  en batería}
+\label{code:codigo5}
+\end{figure}
+
+Esta función toma como parámetros un sistema difuso y una lista de
+parámetros de entrada para el sistema. En este caso concreto nuestro
+sistema sólo utiliza dos entradas. Para calcular el resultado a
+devolver, la función tendrá que aplicar las entradas a las reglas del
+sistema y calcular el valor de salida usando el método de
+defuzzificación del sistema, como podemos ver en la línea 2 de la
+figura \ref{code:codigo5}.
+
+Para calcular el grado de activación de cada regla se mapea la función
+\emph{evalTerm} sobre todas las reglas. Podemos ver esta función en la
+figura \ref{code:codigo6}.
+
+\begin{figure}
+\begin{lstlisting}
+evalTerm :: Tnorm -> Snorm -> Term -> Fuzzy
+evalTerm and or (t1 :&& t2)          = (evalTerm and or t1) `and` (evalTerm and or t2)
+evalTerm and or (t1 :|| t2)          = (evalTerm and or t1) `or`  (evalTerm and or t2)
+evalTerm and or ((Val x) := memFunc) = memFunc x
+evalTerm _   _   _                   = 0
+\end{lstlisting}
+\caption{Función que evalúa un término difuso, calculando así el grado de activación}
+\label{code:codigo6}
+\end{figure}
+
+Pero primero se necesita sustituir cada variable en las reglas por su
+correspondiente valor de entrada. Para eso usamos la función
+\emph{tmap}, que aunque no es exactamente igual, recuerda a
+\emph{fmap} en su funcionamiento, pero debido a sus restricciones no
+podemos declarar una instancia de \emph{Functor}. Podemos ver esta
+función en la figura \ref{code:codigo7}.
+
+\begin{figure}
+\begin{lstlisting}
+tmap :: (String -> Float) -> Term -> Term
+tmap f (l :&& r) = (tmap f l) :&& (tmap f r)
+tmap f (l :|| r) = (tmap f l) :|| (tmap f r)
+tmap f ((Var x) := mem) = (Val $ f x) := mem
+\end{lstlisting}
+\caption{Función que aplica una función de String a Float a la
+  estuctura de un Term}
+\label{code:codigo7}
+\end{figure}
+
+Lo siguiente será echar un vistazo a cómo definimos el sistema difuso,
+y para eso vamos a ver cómo definimos una regla.
+
+Abusando un poco del sistema de tipos de haskell, hemos ideado una
+forma de construir los tipos que nos permite describir las reglas con
+una sintaxis no demasiado incómoda, siendo bastante fáciles de leer en
+código directamente. Primero veamos el tipo Term, tal y como aparece
+en la figura \ref{code:codigo8}. Está formado por tres constructores,
+pero no son contructores normales, son \emph{infijos}. Podemos
+observar también que la definición es recursiva, y que el caso base es
+en el que \emph{Term} está definido como una asignación de una función
+de pertenencia a una variable.
+
+\begin{figure}
+\begin{lstlisting}
+data Term = (Term) :&& (Term) | (Term) :|| (Term) | (Var) := (MemFunc)
+\end{lstlisting}
+\caption{Tipo de dato que representa una proposición difusa.}
+\label{code:codigo8}
+\end{figure}
+
+Examinemos a continuación el tipo Rule. Podemos verlo en la figura
+\ref{code:codigo9}. Su constructor \emph{IF} representa
+convenientemente el comienzo de una expresión lógica, a continuación
+recibe un \emph{Term} y por último un \emph{Conseq}. La estructura es
+muy clara: \emph{IF regla-difusa consecuente}. También podemos ver en
+la figura \ref{code:codigo10} que el constructor del tipo
+\emph{Conseq} también está convenientemente nombrado como \emph{THEN},
+por lo que nos queda una estructura del tipo:
+
+\begin{equation}
+IF ((variable := metodo) :\&\& (variable2 := metodo2) :\&\& ...) \$
+THEN consecuente 
+\end{equation}
+
+Es importante fijarnos en el símbolo \$ que hay entre la parte del
+antecedente y \emph{THEN}. En vez de eso podemos usar paréntesis
+rodeando a todo el consecuente.
+
+En la figura \ref{code:codigo11} podemos ver código en el que se 
+definen algunas reglas.
+
+\begin{figure}
+\begin{lstlisting}
+data Rule = IF Term Conseq
+\end{lstlisting}
+\caption{Tipo de dato que representa una regla del sistema difuso.}
+\label{code:codigo9}
+\end{figure}
+
+\begin{figure}
+\begin{lstlisting}
+data Conseq = THEN Var (Float, Float)
+\end{lstlisting}
+\caption{Tipo de dato que representa el consecuente de una regla.}
+\label{code:codigo10}
+\end{figure}
+
+\begin{figure}
+\begin{lstlisting}
+reglas = [
+IF ((Var "X" := lE) :&& (Var "Angulo" := rB)) $ THEN (Var "volante") (sera3 ps),
+IF ((Var "X" := lE) :&& (Var "Angulo" := rU)) $ THEN (Var "volante") (sera3 ns),
+IF ((Var "X" := lE) :&& (Var "Angulo" := rV)) $ THEN (Var "volante") (sera3 nm),
+IF ((Var "X" := lE) :&& (Var "Angulo" := vE)) $ THEN (Var "volante") (sera3 nm),
+...
+]
+\end{lstlisting}
+\caption{Reglas del sistema difuso escritas con una sintaxis facil de leer.}
+\label{code:codigo11}
+\end{figure}
+
+Por último, tenemos la función \emph{main}, la cual podemos ver en la
+figura \ref{code:codigo12}, que calcula la
+salida del sistema difuso para todos los posibles valores del ángulo y
+la distancia. Con estos valores podremos representar gráficamente al
+sistema.
+
+\begin{figure}
+\begin{lstlisting}
+main :: IO ()
+main = putStrLn $ (unlines . map (unwords . map (show))) vs
+  where vs = [[a,x,fuzzyParking system [x,a]] | x <- [-50,-45..50], a <- [-180,-170..180]]
+\end{lstlisting}
+\caption{Función main, que calcula la salida del sistema difuso para
+  todos los posibles valores de entrada.}
+\label{code:codigo12}
+\end{figure}

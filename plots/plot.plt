@@ -1,4 +1,4 @@
-set terminal png transparent nocrop enhanced size 1080,720 font "arial,12"
+set terminal png transparent nocrop enhanced size 1080,720 font "arial,13"
 set output '../img/surface.png'
 set title "Superficie 3D que representa las reglas del controlador difuso"
 set xlabel "Ángulo a"
