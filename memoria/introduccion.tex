@@ -1,0 +1,40 @@
+\section{Introducción}
+La lógica difusa es un tipo de lógica en el que las proposiciones no
+son verdaderas o falsas, sino que tienen un \emph{grado de verdad} que se
+representa mediante un número real comprendido entre 0 y 1. El valor 0
+indica que la proposición es totalmente falsa. El valor 1 indica que
+la proposición es totalmente verdadera. Los valores intermedios
+indican que la proposición debe considerarse verdadera en cierto
+grado.
+
+Los diferentes conceptos usados en lógica difusa se representan
+mediante fuciones de pertenencia. Estas fuciones pueden tener muchas
+formas, pero generalmete para describir conceptos relacionados con
+variables continuas se utilizan fuciones de pertenencia con forma de
+triángulo, trapezoide, rampa, campana, sigmoide, etc.
+
+Una proposición difusa básica expresa la relación entre el valor de
+una cierta variable y un concepto. Por ejemplo, \emph{la temperatura es
+alta} es una proposición difusa que relaciona la variable \emph{temperatura}
+con el concepto \emph{alta}. Al evaluar la proposición aplicando el
+valor de la variable a la función de pertenencia, obtenemos un valor
+entre 0 y 1 que representa el \emph{grado de activación} de la proposición.
+
+Las proposiciones difusas se componen por medio de operaciones AND y
+OR. Estas operaciones representan los operadores lógicos AND y OR,
+pero deben ser funciones definidas sobre valores reales entre 0 y 1
+para poder aplicarlas a valores difusos. Las funciones que cumplen
+este requisito se llaman T-normas y S-normas. Las T-normas más
+utilizadas para representar la operación AND and son el mínimo o el
+producto (en esta implementación usaremos el producto). Para
+representar la operación OR se utilizan el máximo o la suma acotada
+entre otras (en nuestro caso usaremos la suma algebraica).
+
+Una regla difusa es una contrucción del tipo \emph{if ... then ...}
+donde el antecedente de la regla es una proposición difusa.
+
+Una base de reglas es un conjunto de reglas en las que las variables
+de entrada del sistema se usan en el antecedente y las variables de
+salida se usan en los consecuentes. Mediante un método de
+``defuzzificación'' se obtienen las variables de salida a partir del
+grado de activación de las reglas y su consecuente.
