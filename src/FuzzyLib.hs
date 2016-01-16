@@ -59,13 +59,13 @@ snormSum a b = a + b - (a*b)
 -- | La función 'fuzzyMean' devuelve un método de defuzzyficación calculado como
 -- la media de los centros de los consecuentes de cada regla, ponderados
 -- por el grado de activación de la regla.
-fuzzyMean :: Defuzmethod -- [(Float, Float, Float)] -> Float
+fuzzyMean :: Defuzmethod -- [(Float, Float, Fuzzy)] -> Float
 fuzzyMean x = foldr (\(c,_,a) acc -> acc + (a*c)) 0 x /
   (foldr (\(_,_,a) acc -> acc + a) 0 x)
 
 -- | La función 'weightedFuzzyMean' devuelve un método de defuzzyficación calculado
 -- como la media de los centros de los consecuentes de cada regla, ponderados por
 -- el producto entre el grado de activación de la regla y la base o el área del consecuente.
-weightedFuzzyMean :: Defuzmethod -- [(Float, Float, Float)] -> Float
+weightedFuzzyMean :: Defuzmethod -- [(Float, Float, Fuzzy)] -> Float
 weightedFuzzyMean x = foldr (\(c,d,a) acc -> acc + (a*d*c)) 0 x /
   (foldr (\(_,d,a) acc -> acc + (a*d)) 0 x)
