@@ -21,5 +21,12 @@ tests = test [ "test-triangle-move1" ~: (triangle (5,6,7)) 5.3 ~=? ((triangle (-
                "test-trapezoid22" ~: (trapezoid (5,8,9.5, 10)) 6 < 1 ~? "",
                "test-trapezoid3" ~: (trapezoid (5,8,9.5, 10)) 9 ~=? 1,
                
-               "test-sramp-zramp" ~: (sramp (5,8)) 7 ~=? (1 - ((zramp (5,8))  7))
+               "test-sramp-zramp" ~: (sramp (5,8)) 7 ~=? (1 - ((zramp (5,8))  7)),
+
+               "test-tnormMin" ~: tnormMin 0.5 0.8 ~=? 0.5,
+               "test-tnormProd" ~: tnormProd 0.5 0.8 ~=? 0.4,
+               "test-snormMax" ~: snormMax 0.5 0.8 ~=? 0.8,
+               "test-snormSum" ~: snormSum 0.5 0.8 ~=? 0.9,
+
+               "test-2fuzzyMean" ~: fuzzyMean [(10, 20, 0.5), (30, 20, 0.1)] ~=? weightedFuzzyMean [(10, 20, 0.5), (30, 20, 0.1)]
              ]
