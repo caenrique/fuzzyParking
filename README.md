@@ -1,4 +1,4 @@
-![][img/surface.png]
+![](img/surface.png)
 
 # Controlador de aparcamiento en batería usando lógica difusa
 Consiste en un sistema de reglas basadas en lógica difusa que describen el comportamiento del controlador. El sistema recibe dos parámetros: el ángulo del coche con respecto a la paralela del aparcamiento, y la distancia a la bisectriz del apacamiento. Con esos dos parámetros se calcula el valor de la posición del volante.
